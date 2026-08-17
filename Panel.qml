@@ -4,6 +4,7 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
+import "Prayers.js" as Prayers
 
 Panel {
   id: root
@@ -704,6 +705,63 @@ Panel {
               }
             }
           }
+          }
+
+          PanelSeparator {
+            width: parent.width
+          }
+
+          Column {
+            width: parent.width
+            // Mirror the Scripture section with 4px from title to first row.
+            spacing: Style.space(4)
+
+            PanelSectionHeader {
+              text: "PRAYERS"
+              foreground: root.contentForeground
+              fontFamily: root.contentFontFamily
+            }
+
+            Column {
+              width: parent.width
+              spacing: 0
+
+              ScriptureRow {
+                width: parent.width
+                iconText: ""
+                title: "Trisagion Prayers"
+                body: Prayers.trisagionPrayer()
+                foreground: root.contentForeground
+                fontFamily: root.contentFontFamily
+              }
+
+              ScriptureRow {
+                width: parent.width
+                iconText: ""
+                title: "Morning Prayers"
+                body: Prayers.morningPrayer()
+                foreground: root.contentForeground
+                fontFamily: root.contentFontFamily
+              }
+
+              ScriptureRow {
+                width: parent.width
+                iconText: ""
+                title: "Before & After Meals"
+                body: Prayers.mealPrayer()
+                foreground: root.contentForeground
+                fontFamily: root.contentFontFamily
+              }
+
+              ScriptureRow {
+                width: parent.width
+                iconText: ""
+                title: "Evening Prayers"
+                body: Prayers.eveningPrayer()
+                foreground: root.contentForeground
+                fontFamily: root.contentFontFamily
+              }
+            }
           }
 
           Column {

@@ -19,6 +19,7 @@ The widget defaults to the right side of the bar. Move it with Omarchy's bar con
 ## Features
 
 - Daily fasting rule and major-fast or Pascha banners
+- Expandable Trisagion, morning, meal, and evening prayers
 - Sunday–Saturday prayer history plus morning and evening prayer checks
 - Gospel-first Scripture readings with expandable full text
 - Saints and commemorations with expandable lives and matching OCA icons when available
