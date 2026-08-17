@@ -707,10 +707,6 @@ Panel {
           }
           }
 
-          PanelSeparator {
-            width: parent.width
-          }
-
           Column {
             width: parent.width
             // Mirror the Scripture section with 4px from title to first row.
@@ -729,7 +725,7 @@ Panel {
               ScriptureRow {
                 width: parent.width
                 iconText: ""
-                title: "Trisagion Prayers"
+                title: "Trisagion"
                 body: Prayers.trisagionPrayer()
                 foreground: root.contentForeground
                 fontFamily: root.contentFontFamily

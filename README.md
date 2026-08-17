@@ -1,10 +1,12 @@
 # Orthodox Daily
 
-![Orthodox Daily preview](preview.png)
+![Orthodox Daily overview](preview.png)
 
-![Expanded saint life with OCA icon](preview-saint-life.png)
+![Expanded saint life with OCA icon](gallery-saint-life.png)
 
-![Expanded Scripture reading](preview-scripture.png)
+![Expanded Scripture reading](gallery-scripture.png)
+
+![Expanded Trisagion prayers](gallery-trisagion.png)
 
 An Orthodox Christian daily companion for the Omarchy bar, with fasting guidance, prayer tracking, Scripture readings, feasts, and lives of the saints.
 

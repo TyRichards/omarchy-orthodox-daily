@@ -23,7 +23,7 @@ CursorSurface {
   property bool expandable: true
   property bool expanded: false
   readonly property real verticalPadding: Math.max(0,
-    Style.spacing.rowPaddingX / 2 - Style.space(2))
+    Style.spacing.rowPaddingX / 2 - Style.space(4))
 
   hasCursor: expandable && rowMouse.containsMouse
   current: expandable && expanded
