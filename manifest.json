@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.tyrichards.orthodox-daily",
+  "name": "Orthodox Daily",
+  "version": "1.0.0",
+  "author": "Ty Richards",
+  "license": "MIT",
+  "description": "Daily Orthodox readings, saints, feasts, fasting guidance, and prayer checklists",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Orthodox Daily",
+    "description": "Daily Orthodox readings, saints, feasts, fasting guidance, and prayer checklists",
+    "category": "Info",
+    "allowMultiple": false
+  }
+}
