@@ -7,14 +7,79 @@ function dateKey(date) {
   return date.getFullYear() + "-" + pad2(date.getMonth() + 1) + "-" + pad2(date.getDate())
 }
 
-function apiUrl(date) {
-  return "https://orthocal.info/api/slavic/gregorian/"
+var TRADITIONS = ["slavic", "greek"]
+var CALENDARS = ["julian", "gregorian"]
+
+function normalizeTradition(value) {
+  return TRADITIONS.indexOf(value) >= 0 ? value : "slavic"
+}
+
+function normalizeCalendar(value) {
+  return CALENDARS.indexOf(value) >= 0 ? value : "gregorian"
+}
+
+function defaultSettings() {
+  return { tradition: "slavic", calendar: "gregorian" }
+}
+
+function parseSettings(raw) {
+  try {
+    var value = JSON.parse(String(raw || ""))
+    return {
+      tradition: normalizeTradition(value && value.tradition),
+      calendar: normalizeCalendar(value && value.calendar)
+    }
+  } catch (e) {
+    return defaultSettings()
+  }
+}
+
+// orthocal.info's {year}/{month}/{day} path segment is a date *in the
+// requested calendar*, not always the Gregorian civil date, so a Julian
+// request needs the civil date converted to its Julian-calendar equivalent
+// (currently 13 days behind) before it's put in the URL.
+function gregorianToJDN(year, month, day) {
+  var a = Math.floor((14 - month) / 12)
+  var y = year + 4800 - a
+  var m = month + 12 * a - 3
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y
+    + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
+}
+
+function jdnToJulianDate(jdn) {
+  var b = jdn + 32082
+  var c = Math.floor((4 * b + 3) / 1461)
+  var d = b - Math.floor(1461 * c / 4)
+  var e = Math.floor((5 * d + 2) / 153)
+  var day = d - Math.floor((153 * e + 2) / 5) + 1
+  var month = e + 3 - 12 * Math.floor(e / 10)
+  var year = c - 4800 + Math.floor(e / 10)
+  return { year: year, month: month, day: day }
+}
+
+function julianDateFor(date) {
+  return jdnToJulianDate(gregorianToJDN(date.getFullYear(), date.getMonth() + 1, date.getDate()))
+}
+
+function calendarDateFor(date, calendar) {
+  return normalizeCalendar(calendar) === "julian"
+    ? julianDateFor(date)
+    : { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() }
+}
+
+// The {year}/{month}/{day} path segment is always the civil (Gregorian)
+// date to look up — "cal" only controls which calendar's date the response
+// reports back (see reportMatchesDate / calendarDateFor below).
+function apiUrl(date, tradition, calendar) {
+  return "https://orthocal.info/api/"
+    + normalizeTradition(tradition) + "/" + normalizeCalendar(calendar) + "/"
     + date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate()
     + "/?translation=lxx2012-web"
 }
 
-function orthocalUrl(date) {
-  return "https://orthocal.info/readings/slavic/gregorian/lxx2012-web/"
+function orthocalUrl(date, tradition, calendar) {
+  return "https://orthocal.info/readings/"
+    + normalizeTradition(tradition) + "/" + normalizeCalendar(calendar) + "/lxx2012-web/"
     + date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + "/"
 }
 
@@ -37,11 +102,27 @@ function parseReport(raw) {
   }
 }
 
-function reportMatchesDate(report, date) {
+function reportMatchesDate(report, date, calendar) {
+  var expected = calendarDateFor(date, calendar)
   return !!report
-    && Number(report.year) === date.getFullYear()
-    && Number(report.month) === date.getMonth() + 1
-    && Number(report.day) === date.getDate()
+    && Number(report.year) === expected.year
+    && Number(report.month) === expected.month
+    && Number(report.day) === expected.day
+}
+
+function reportMatchesSettings(report, tradition, calendar) {
+  return !!report
+    && report.tradition === normalizeTradition(tradition)
+    && report.calendar === normalizeCalendar(calendar)
+}
+
+function tagReport(report, tradition, calendar) {
+  if (!report) return report
+  var tagged = {}
+  Object.keys(report).forEach(function(key) { tagged[key] = report[key] })
+  tagged.tradition = normalizeTradition(tradition)
+  tagged.calendar = normalizeCalendar(calendar)
+  return tagged
 }
 
 function array(value) {
@@ -177,6 +258,26 @@ function storyText(story) {
     .replace(/^\s+|\s+$/g, ""))
 }
 
+function scriptureClipboardText(readings, dateLabel) {
+  var header = "Scripture Readings — " + String(dateLabel || "")
+  var body = array(readings).map(function(reading) {
+    var title = String(reading.display || "Scripture")
+    var passage = passageText(reading)
+    return passage ? title + "\n\n" + passage : title
+  }).join("\n\n")
+  return body ? header + "\n\n" + body : header
+}
+
+function storiesClipboardText(stories, dateLabel) {
+  var header = "Saints & Commemorations — " + String(dateLabel || "")
+  var body = array(stories).map(function(story) {
+    var title = String(story.title || "Life of a saint")
+    var text = storyText(story)
+    return text ? title + "\n\n" + text : title
+  }).join("\n\n")
+  return body ? header + "\n\n" + body : header
+}
+
 function prayerForDay(history, key) {
   var value = history && history[key] ? history[key] : null
   return {
@@ -253,6 +354,14 @@ if (typeof module !== "undefined") {
     ocaSaintsUrl: ocaSaintsUrl,
     parseReport: parseReport,
     reportMatchesDate: reportMatchesDate,
+    reportMatchesSettings: reportMatchesSettings,
+    tagReport: tagReport,
+    normalizeTradition: normalizeTradition,
+    normalizeCalendar: normalizeCalendar,
+    defaultSettings: defaultSettings,
+    parseSettings: parseSettings,
+    julianDateFor: julianDateFor,
+    calendarDateFor: calendarDateFor,
     array: array,
     displayTitle: displayTitle,
     periodText: periodText,
@@ -267,6 +376,8 @@ if (typeof module !== "undefined") {
     isGospelReading: isGospelReading,
     gospelsFirst: gospelsFirst,
     storyText: storyText,
+    scriptureClipboardText: scriptureClipboardText,
+    storiesClipboardText: storiesClipboardText,
     prayerForDay: prayerForDay,
     parsePrayerHistory: parsePrayerHistory,
     prayerWeek: prayerWeek,
